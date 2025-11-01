@@ -212,3 +212,107 @@ Invalidate the current user's session by clearing the auth cookie and adding the
 { "error": "Internal server error message" }
 ```
 
+# Captain API Documentation
+
+## Captain Registration Endpoint
+
+### POST `/captain/register`
+
+Register a new captain in the system with vehicle details.
+
+#### Request Body
+
+```json
+{
+  "fullname": {
+    "firstname": "string",    // minimum 3 characters
+    "lastname": "string"      // optional, minimum 3 characters if provided
+  },
+  "email": "string",         // valid email format
+  "password": "string",      // minimum 6 characters
+  "vehicle": {
+    "color": "string",       // minimum 3 characters
+    "plate": "string",       // minimum 3 characters
+    "capacity": number,      // minimum 1
+    "vehicleType": "string"  // enum: "car", "motorcycle", "auto"
+  }
+}
+```
+
+#### Validation Rules
+- Email must be a valid email address and unique
+- First name must be at least 3 characters long
+- Password must be at least 6 characters long
+- Vehicle color must be at least 3 characters long
+- Vehicle plate number must be at least 3 characters long
+- Vehicle capacity must be at least 1
+- Vehicle type must be one of: "car", "motorcycle", "auto"
+
+#### Success Response
+
+**Code:** 201 CREATED
+
+**Response Body:**
+```json
+{
+  "token": "string",    // JWT token valid for 24 hours
+  "captain": {
+    "_id": "string",
+    "fullname": {
+      "firstname": "string",
+      "lastname": "string"
+    },
+    "email": "string",
+    "vehicle": {
+      "color": "string",
+      "plate": "string",
+      "capacity": number,
+      "vehicleType": "string"
+    },
+    "status": "inactive", // default status
+    "location": {
+      "ltd": null,
+      "lng": null
+    }
+  }
+}
+```
+
+#### Error Responses
+
+**Code:** 400 BAD REQUEST
+- When validation fails for any field
+```json
+{
+  "errors": [
+    {
+      "msg": "Error message",
+      "param": "field_name"
+    }
+  ]
+}
+```
+
+**Code:** 400 BAD REQUEST
+- When email is already registered
+```json
+{
+  "message": "Captain already exist"
+}
+```
+
+**Code:** 500 INTERNAL SERVER ERROR
+- When server encounters an error during captain creation
+```json
+{
+  "error": "Internal server error message"
+}
+```
+
+#### Notes
+- The password is automatically hashed before storing
+- A JWT token is generated upon successful registration
+- The token expires in 24 hours
+- New captains are created with "inactive" status by default
+- Location coordinates (ltd/lng) are initially null until updated
+- The response will not include the password field
