@@ -316,3 +316,155 @@ Register a new captain in the system with vehicle details.
 - New captains are created with "inactive" status by default
 - Location coordinates (ltd/lng) are initially null until updated
 - The response will not include the password field
+
+## Captain Login Endpoint
+
+### POST `/captain/login`
+
+Authenticate an existing captain and return a JWT token plus captain data (password excluded).
+
+#### Request Body
+
+```json
+{
+  "email": "captain@example.com",
+  "password": "string"
+}
+```
+
+#### Validation Rules
+- Email must be a valid email address
+- Password must be at least 6 characters long
+
+#### Success Response
+- **Status:** 200 OK
+- **Body:**
+
+```json
+{
+  "token": "<jwt-token>",
+  "captain": {
+    "_id": "<captain-id>",
+    "fullname": {
+      "firstname": "string",
+      "lastname": "string"
+    },
+    "email": "string",
+    "vehicle": {
+      "color": "string",
+      "plate": "string",
+      "capacity": number,
+      "vehicleType": "string"
+    },
+    "status": "string",
+    "location": {
+      "ltd": number,
+      "lng": number
+    }
+  }
+}
+```
+
+Notes:
+- The token is stored as an httpOnly cookie
+- The token expires in 24 hours
+- Password field is excluded from the response
+
+#### Error Responses
+
+- **400 Bad Request** — validation errors
+```json
+{
+  "errors": [
+    { "msg": "Invalid email address", "param": "email" }
+  ]
+}
+```
+
+- **401 Unauthorized** — invalid credentials
+```json
+{ "error": "Invalid email or password" }
+```
+
+## Captain Profile Endpoint
+
+### GET `/captain/profile`
+
+Return the authenticated captain's profile information including vehicle and status details.
+
+#### Authentication
+- Requires valid JWT token in `Authorization: Bearer <token>` header or `token` cookie
+- Token must not be blacklisted
+
+#### Success Response
+- **Status:** 200 OK
+- **Body:**
+
+```json
+{
+  "_id": "<captain-id>",
+  "fullname": {
+    "firstname": "string",
+    "lastname": "string"
+  },
+  "email": "string",
+  "vehicle": {
+    "color": "string",
+    "plate": "string",
+    "capacity": number,
+    "vehicleType": "string"
+  },
+  "status": "string",
+  "location": {
+    "ltd": number,
+    "lng": number
+  }
+}
+```
+
+#### Error Responses
+
+- **401 Unauthorized** — no token or invalid token
+```json
+{ "message": "unauthorized, no token provided" }
+```
+
+- **401 Unauthorized** — blacklisted token
+```json
+{ "message": "unauthorized, token is blacklisted" }
+```
+
+## Captain Logout Endpoint
+
+### GET `/captain/logout`
+
+Invalidate the captain's session by clearing the auth cookie and blacklisting the token.
+
+#### Authentication
+- Requires valid JWT token in `Authorization: Bearer <token>` header or `token` cookie
+- Token must not be already blacklisted
+
+#### Success Response
+- **Status:** 200 OK
+- **Body:**
+
+```json
+{ "message": "Logged out successfully" }
+```
+
+#### Behavior
+- Clears the `token` cookie
+- Adds the token to blacklist collection (expires after 24 hours)
+- Prevents token reuse during its remaining lifetime
+
+#### Error Responses
+
+- **401 Unauthorized** — no token or invalid token
+```json
+{ "message": "unauthorized, no token provided" }
+```
+
+- **401 Unauthorized** — already blacklisted token
+```json
+{ "message": "unauthorized, token is blacklisted" }
+```

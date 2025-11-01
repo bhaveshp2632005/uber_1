@@ -3,6 +3,7 @@ import userService from '../services/user.services.js';
 import { validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
 import blacklistTokenModel from '../models/blacklistToken.model.js';
+
  const registerUser = async (req, res,next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -60,5 +61,6 @@ const logoutUser=async(req,res,next)=>{
     res.status(200).json({message:'Logged out successfully'});
 
 }
+
     
 export default {registerUser,loginUser,getUserProfile,logoutUser};
