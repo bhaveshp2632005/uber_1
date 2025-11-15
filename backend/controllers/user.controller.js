@@ -51,7 +51,9 @@ const loginUser=async(req,res,next)=>{
     catch (error) {
         next(error);
     }}
-const getUserProfile=async(req,res,next)=>{res.status(200).json(req.user);
+const getUserProfile=async(req,res,next)=>{
+    console.log('Fetching user profile for:', req.user);
+    res.status(200).json(req.user);
 
 }
 const logoutUser=async(req,res,next)=>{

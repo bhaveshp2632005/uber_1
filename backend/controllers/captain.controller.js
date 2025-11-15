@@ -39,29 +39,42 @@ const registerCaptain = async (req, res, next) => {const errors = validationResu
 
 }
 const loginCaptain = async (req, res, next) => {
-        const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-    const { email, password } = req.body;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
 
-    try {
-        const captain = await captainModel.findOne({ email }).select('+password');
-        if (!captain) {
-            return res.status(401).json({ error: 'Invalid email or password' });
-        }
-        const isPasswordValid = await captain.comparePassword(password);
-        if (!isPasswordValid) {
-            return res.status(401).json({ error: 'Invalid email or password' });
-        }
-        const token = captain.generateAuthToken();
-        res.cookie('token', token, { httpOnly: true });
-        res.status(200).json({ token, captain });
-    } catch (error) {
-        next(error);
+  const { email, password } = req.body;
+  console.log("📩 Login attempt:", email, password);
+
+  try {
+    const captain = await captainModel.findOne({ email }).select('+password');
+    if (!captain) {
+      console.log("❌ Captain not found for:", email);
+      return res.status(401).json({ error: 'Invalid email or password' });
     }
-}
+
+    const isPasswordValid = await captain.comparePassword(password);
+    console.log("🔑 Password valid?", isPasswordValid);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    const token = captain.generateAuthToken();
+    console.log("✅ Generated token:", token);
+
+    res.cookie('token', token, { httpOnly: true });
+    res.status(200).json({ token, captain });
+  } catch (error) {
+    console.error("🔥 Login error:", error);
+    next(error);
+  }
+};
+
 const getCaptainProfile = async (req, res, next) => {
+    console.log('Fetching captain profile for:');
+    console.log(req.captain);
     res.status(200).json({captain: req.captain});
 }   
 const logoutCaptain = async (req, res, next) => {

@@ -1,0 +1,5 @@
+@import "tailwindcss";
+/* index.css or global.css */
+.leaflet-container { z-index: 1; }         /* map behind UI */
+.map-ui { z-index: 50; }                    /* UI overlay above map */
+html,body,#root { height: 100%; }
